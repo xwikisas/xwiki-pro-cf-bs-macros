@@ -1,0 +1,6 @@
+com.xwiki.macros.cf.bs.internal.livedata.JSONTableLiveDataEntryStore
+com.xwiki.macros.cf.bs.internal.livedata.JSONTableLiveDataPropertyDescriptorStore
+com.xwiki.macros.cf.bs.internal.livedata.JSONTableLiveDataSource
+com.xwiki.macros.cf.bs.internal.JSONTableDataCache
+com.xwiki.macros.cf.bs.internal.JSONTableDataManager
+com.xwiki.macros.cf.bs.internal.JSONTableMacro
