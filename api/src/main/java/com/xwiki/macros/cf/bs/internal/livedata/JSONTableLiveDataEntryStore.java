@@ -42,7 +42,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.xwiki.macros.cf.bs.internal.JSONTableDataManager;
+import com.xwiki.macros.cf.bs.internal.JSONTableDataHelper;
 
 /**
  * Live data entry store for the {@link JSONTableLiveDataSource}.
@@ -56,7 +56,7 @@ import com.xwiki.macros.cf.bs.internal.JSONTableDataManager;
 public class JSONTableLiveDataEntryStore extends WithParameters implements LiveDataEntryStore
 {
     @Inject
-    private JSONTableDataManager manager;
+    private JSONTableDataHelper manager;
 
     @Override
     public Optional<Map<String, Object>> get(Object entryId) throws LiveDataException

@@ -33,9 +33,9 @@ import com.fasterxml.jackson.databind.JsonNode;
  * @version $Id$
  * @since 1.0
  */
-@Component(roles = JSONTableDataManager.class)
+@Component(roles = JSONTableDataHelper.class)
 @Singleton
-public class JSONTableDataManager
+public class JSONTableDataHelper
 {
     /**
      * Apply a given JSONPath to the given node and retuns the matching nodes.
