@@ -51,6 +51,16 @@ public class JSONTableMacroParameters
      */
     public static final String URL = "url";
 
+    /**
+     * The capitalize parameter name.
+     */
+    public static final String CAPITALIZE = "capitalize";
+
+    /**
+     * The strip qualifiers parameter name.
+     */
+    public static final String STRIP_QUALIFIERS = "stripQualifiers";
+
     private static final String PATH_SPLIT_CHAR = ",";
 
     private List<String> paths;
@@ -58,6 +68,10 @@ public class JSONTableMacroParameters
     private List<String> fieldPaths;
 
     private URL url;
+
+    private boolean stripQualifiers;
+
+    private boolean capitalize = true;
 
     /**
      * @return a map of the parameters of this macro.
@@ -129,5 +143,39 @@ public class JSONTableMacroParameters
     public URL getUrl()
     {
         return this.url;
+    }
+
+    /**
+     * @param stripQualifiers whether the leading qualifiers should be stripped from generated headings
+     */
+    @PropertyName("Strip leading qualifiers from generated headings")
+    public void setStripQualifiers(boolean stripQualifiers)
+    {
+        this.stripQualifiers = stripQualifiers;
+    }
+
+    /**
+     * @return true if qualifiers should be stripped on generated headings
+     */
+    public boolean getStripQualifiers()
+    {
+        return this.stripQualifiers;
+    }
+
+    /**
+     * @param capitalize whether the first character of generated headings should be capitalized.
+     */
+    @PropertyName("Capitalize the first characters of headings")
+    public void setCapitalize(boolean capitalize)
+    {
+        this.capitalize = capitalize;
+    }
+
+    /**
+     * @return true if the first character of headings should be capitalized.
+     */
+    public boolean getCapitalize()
+    {
+        return this.capitalize;
     }
 }

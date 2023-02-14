@@ -33,6 +33,7 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -149,7 +150,7 @@ public class JSONTableMacro extends AbstractMacro<JSONTableMacroParameters>
         for (String fieldPath : parameters.getFieldPathsList()) {
             propertyDescriptors.add(new HashMap<String, Object>() {{
                     put(ID, fieldPath);
-                    put("name", fieldPath);
+                    put("name", getPropertyName(fieldPath, parameters));
                     put("type", STRING);
                     put(EDITABLE, false);
                     put(SORTABLE, true);
@@ -157,6 +158,17 @@ public class JSONTableMacro extends AbstractMacro<JSONTableMacroParameters>
                 }});
         }
         return propertyDescriptors;
+    }
+
+    private String getPropertyName(String fieldPath, JSONTableMacroParameters parameters)
+    {
+        String result = fieldPath;
+        if (parameters.getStripQualifiers()) {
+            String[] qualifiers = result.split("\\.");
+            result = qualifiers[qualifiers.length - 1];
+        }
+        
+        return (parameters.getCapitalize()) ? StringUtils.capitalize(result) : result;
     }
 
     private Pair<String, JsonNode> getJsonNode(JSONTableMacroParameters parameters, String content)
