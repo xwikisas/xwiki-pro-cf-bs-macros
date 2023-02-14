@@ -46,8 +46,11 @@ public class JSONTableDataHelper
      */
     public Enumeration<JsonNode> applyPath(String path, JsonNode node)
     {
+        // Make sure that the jsonpath starts with the root
+        String fullPath =  (path.startsWith("$.")) ? path : String.format("$.%s", path);
+
         scala.collection.Iterator<JsonNode> res =
-            io.gatling.jsonpath.JsonPath$.MODULE$.query(path, node).right().get();
+            io.gatling.jsonpath.JsonPath$.MODULE$.query(fullPath, node).right().get();
         return scala.collection.JavaConverters$.MODULE$.asJavaEnumeration(res);
     }
 }

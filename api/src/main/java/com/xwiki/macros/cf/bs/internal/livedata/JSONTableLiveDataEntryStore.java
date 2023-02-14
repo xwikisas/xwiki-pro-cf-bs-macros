@@ -21,6 +21,8 @@ package com.xwiki.macros.cf.bs.internal.livedata;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -38,10 +40,8 @@ import org.xwiki.livedata.LiveDataQuery;
 
 import org.xwiki.livedata.WithParameters;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.TextNode;
 import com.xwiki.macros.cf.bs.internal.JSONTableDataHelper;
 
 /**
@@ -78,36 +78,23 @@ public class JSONTableLiveDataEntryStore extends WithParameters implements LiveD
         liveData.setCount(nodes.size());
 
         // TODO : calculate offset
-        // TODO : apply filters
         ObjectMapper mapper = new ObjectMapper();
         List<Map<String, Object>> entries = new ArrayList<>();
-        for (JsonNode node : nodes) {
-            boolean matchesFilters = true;
+        for (JsonNode rootNode : nodes) {
+            Map<String, Object> entry = new HashMap<>();
 
-            for (LiveDataQuery.Filter filter : query.getFilters()) {
-                String property = filter.getProperty();
-
-                if (node.get(property) instanceof TextNode) {
-                    String nodeValue = node.get(property).textValue();
-
-                    for (LiveDataQuery.Constraint constraint : filter.getConstraints()) {
-                        if (constraint.getOperator().equals("contains")) {
-                            matchesFilters &= nodeValue.contains((String) constraint.getValue());
-                        } else if (constraint.getOperator().equals("equals")) {
-                            matchesFilters &= nodeValue.equals(constraint.getValue());
-                        } else if (constraint.getOperator().equals("startsWith")) {
-                            matchesFilters &= nodeValue.startsWith((String) constraint.getValue());
-                        }
-                    }
-                }
-
-                if (!matchesFilters) {
-                    break;
+            // Start by resolving the field paths
+            // TODO: This operation can be very expensive (especially because it's done multiple times), we should
+            //  probably look at a way to cache the result
+            for (String fieldPath : fieldPaths) {
+                Enumeration<JsonNode> matchingNodes = manager.applyPath(fieldPath, rootNode);
+                if (matchingNodes.hasMoreElements()) {
+                    entry.put(fieldPath, mapper.convertValue(matchingNodes.nextElement(), String.class));
                 }
             }
 
-            if (matchesFilters) {
-                entries.add(mapper.convertValue(node, new TypeReference<Map<String, Object>>() { }));
+            if (matchesFilters(query.getFilters(), entry)) {
+                entries.add(entry);
             }
         }
 
@@ -120,5 +107,30 @@ public class JSONTableLiveDataEntryStore extends WithParameters implements LiveD
 
         liveData.getEntries().addAll(entries);
         return liveData;
+    }
+
+    private boolean matchesFilters(List<LiveDataQuery.Filter> filters, Map<String, Object> entry)
+    {
+        boolean matchesFilters = true;
+
+        for (LiveDataQuery.Filter filter : filters) {
+            String nodeValue = (String) entry.get(filter.getProperty());
+
+            for (LiveDataQuery.Constraint constraint : filter.getConstraints()) {
+                if (constraint.getOperator().equals("contains")) {
+                    matchesFilters &= nodeValue.contains((String) constraint.getValue());
+                } else if (constraint.getOperator().equals("equals")) {
+                    matchesFilters &= nodeValue.equals(constraint.getValue());
+                } else if (constraint.getOperator().equals("startsWith")) {
+                    matchesFilters &= nodeValue.startsWith((String) constraint.getValue());
+                }
+            }
+
+            if (!matchesFilters) {
+                break;
+            }
+        }
+
+        return matchesFilters;
     }
 }
