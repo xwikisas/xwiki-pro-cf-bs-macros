@@ -22,10 +22,6 @@ package com.xwiki.macros.cf.bs.internal;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,6 +32,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -80,8 +77,6 @@ public class JSONTableMacro extends AbstractMacro<JSONTableMacroParameters>
     @Inject
     private JSONTableDataCache jsonTableDataCache;
 
-    private MessageDigest digest;
-
     private ObjectMapper objectMapper;
 
     /**
@@ -96,13 +91,6 @@ public class JSONTableMacro extends AbstractMacro<JSONTableMacroParameters>
     public void initialize() throws InitializationException
     {
         this.objectMapper = new ObjectMapper();
-
-        try {
-            this.digest = MessageDigest.getInstance("SHA-256");
-        } catch (NoSuchAlgorithmException e) {
-            throw new InitializationException("Failed to initialize JSON Table Macro");
-        }
-
         super.initialize();
     }
 
@@ -178,8 +166,7 @@ public class JSONTableMacro extends AbstractMacro<JSONTableMacroParameters>
         String key;
 
         if (parameters.getUrl() != null) {
-            key = new String(digest.digest(parameters.getUrl().toString().getBytes(StandardCharsets.UTF_8)),
-                StandardCharsets.UTF_8);
+            key = DigestUtils.sha256Hex(parameters.getUrl().toString());
             result = jsonTableDataCache.get(key);
 
             if (result == null) {
@@ -187,7 +174,7 @@ public class JSONTableMacro extends AbstractMacro<JSONTableMacroParameters>
                 jsonTableDataCache.set(key, result);
             }
         } else {
-            key = new String(digest.digest(content.getBytes(Charset.defaultCharset())));
+            key = DigestUtils.sha256Hex(content);
             result = jsonTableDataCache.get(key);
 
             if (result == null) {
