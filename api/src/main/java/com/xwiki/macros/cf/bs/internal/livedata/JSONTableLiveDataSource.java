@@ -33,6 +33,12 @@ import org.xwiki.livedata.WithParameters;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.xwiki.macros.cf.bs.internal.JSONTableDataCache;
 
+/**
+ * Live data source for the {@link com.xwiki.macros.cf.bs.internal.JSONTableMacro}.
+ *
+ * @version $Id$
+ * @since 1.0
+ */
 @Component
 @Named(JSONTableLiveDataSource.ROLE_HINT)
 @InstantiationStrategy(ComponentInstantiationStrategy.PER_LOOKUP)
@@ -42,6 +48,8 @@ public class JSONTableLiveDataSource extends WithParameters implements LiveDataS
      * The role hint that will be used for every jsonTable component.
      */
     public static final String ROLE_HINT = "jsonTable";
+
+    private static final String NODE = "node";
 
     @Inject
     @Named(ROLE_HINT)
@@ -58,7 +66,7 @@ public class JSONTableLiveDataSource extends WithParameters implements LiveDataS
     public LiveDataEntryStore getEntries()
     {
         if (this.entryStore instanceof WithParameters) {
-            ((WithParameters) this.entryStore).getParameters().put("node", getJsonNode());
+            ((WithParameters) this.entryStore).getParameters().put(NODE, getJsonNode());
             ((WithParameters) this.entryStore).getParameters().putAll(this.getParameters());
         }
         return this.entryStore;
@@ -68,7 +76,7 @@ public class JSONTableLiveDataSource extends WithParameters implements LiveDataS
     public LiveDataPropertyDescriptorStore getProperties()
     {
         if (this.propertyStore instanceof WithParameters) {
-            ((WithParameters) this.entryStore).getParameters().put("node", getJsonNode());
+            ((WithParameters) this.entryStore).getParameters().put(NODE, getJsonNode());
             ((WithParameters) this.propertyStore).getParameters().putAll(this.getParameters());
         }
         return this.propertyStore;

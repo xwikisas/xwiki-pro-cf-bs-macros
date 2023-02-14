@@ -28,15 +28,30 @@ import java.util.Map;
 import org.xwiki.properties.annotation.PropertyMandatory;
 import org.xwiki.properties.annotation.PropertyName;
 
+/**
+ * Parameters for the JSON Table macro.
+ *
+ * @version $Id$
+ * @since 1.0
+ */
 public class JSONTableMacroParameters
 {
-    private static final String PATH_SPLIT_CHAR = ",";
-
+    /**
+     * The paths parameter name.
+     */
     public static final String PATHS = "paths";
 
+    /**
+     * The field paths parameter name.
+     */
     public static final String FIELD_PATHS = "fieldPaths";
 
+    /**
+     * The URL parameter name.
+     */
     public static final String URL = "url";
+
+    private static final String PATH_SPLIT_CHAR = ",";
 
     private List<String> paths;
 
@@ -44,13 +59,16 @@ public class JSONTableMacroParameters
 
     private URL url;
 
+    /**
+     * @return a map of the parameters of this macro.
+     */
     public Map<String, Object> getParameterMap()
     {
         return new HashMap<String, Object>() {{
-            put(PATHS, paths);
-            put(FIELD_PATHS, fieldPaths);
-            put(URL, url);
-        }};
+                put(PATHS, paths);
+                put(FIELD_PATHS, fieldPaths);
+                put(URL, url);
+            }};
     }
 
     /**

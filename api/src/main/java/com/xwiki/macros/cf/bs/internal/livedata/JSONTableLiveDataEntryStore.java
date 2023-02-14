@@ -21,9 +21,6 @@ package com.xwiki.macros.cf.bs.internal.livedata;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -31,7 +28,6 @@ import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.apache.commons.lang3.compare.ComparableUtils;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.InstantiationStrategy;
 import org.xwiki.component.descriptor.ComponentInstantiationStrategy;
@@ -41,7 +37,6 @@ import org.xwiki.livedata.LiveDataException;
 import org.xwiki.livedata.LiveDataQuery;
 
 import org.xwiki.livedata.WithParameters;
-import org.xwiki.text.StringUtils;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -49,6 +44,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.xwiki.macros.cf.bs.internal.JSONTableDataManager;
 
+/**
+ * Live data entry store for the {@link JSONTableLiveDataSource}.
+ *
+ * @version $Id$
+ * @since 1.0
+ */
 @Component
 @Named(JSONTableLiveDataSource.ROLE_HINT)
 @InstantiationStrategy(ComponentInstantiationStrategy.PER_LOOKUP)
@@ -106,7 +107,7 @@ public class JSONTableLiveDataEntryStore extends WithParameters implements LiveD
             }
 
             if (matchesFilters) {
-                entries.add(mapper.convertValue(node, new TypeReference<Map<String, Object>>(){}));
+                entries.add(mapper.convertValue(node, new TypeReference<Map<String, Object>>() { }));
             }
         }
 

@@ -32,6 +32,12 @@ import org.xwiki.livedata.LiveDataPropertyDescriptor;
 import org.xwiki.livedata.LiveDataPropertyDescriptorStore;
 import org.xwiki.livedata.WithParameters;
 
+/**
+ * Live data property descriptor store for the {@link JSONTableLiveDataSource}.
+ *
+ * @version $Id$
+ * @since 1.0
+ */
 @Component
 @Named(JSONTableLiveDataSource.ROLE_HINT)
 @InstantiationStrategy(ComponentInstantiationStrategy.PER_LOOKUP)

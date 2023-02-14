@@ -33,6 +33,12 @@ import org.xwiki.component.phase.InitializationException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+/**
+ * Cache used to store parsed JSON nodes for the {@link JSONTableMacro}.
+ *
+ * @version $Id$
+ * @since 1.0
+ */
 @Component(roles = JSONTableDataCache.class)
 @Singleton
 public class JSONTableDataCache implements Initializable
@@ -61,16 +67,27 @@ public class JSONTableDataCache implements Initializable
         }
     }
 
+    /**
+     * @param key the cache key
+     * @return the corresponding {@link JsonNode}. Returns null if the node does not exist.
+     */
     public JsonNode get(String key)
     {
         return this.cache.get(key);
     }
 
+    /**
+     * @param key the cache key
+     * @param value the {@link JsonNode} to store
+     */
     public void set(String key, JsonNode value)
     {
         this.cache.set(key, value);
     }
 
+    /**
+     * @param key the key to remove
+     */
     public void remove(String key)
     {
         this.cache.remove(key);

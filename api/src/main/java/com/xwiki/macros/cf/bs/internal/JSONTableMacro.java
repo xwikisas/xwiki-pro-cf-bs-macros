@@ -27,7 +27,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -57,11 +56,27 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xwiki.macros.cf.bs.JSONTableMacroParameters;
 import com.xwiki.macros.cf.bs.internal.livedata.JSONTableLiveDataSource;
 
+/**
+ * Allows to insert dynamic tables from a JSON source.
+ *
+ * @version $Id$
+ * @since 1.0
+ */
 @Component
 @Singleton
 @Named("json-table")
 public class JSONTableMacro extends AbstractMacro<JSONTableMacroParameters>
 {
+    private static final String ID = "id";
+
+    private static final String STRING = "String";
+
+    private static final String SORTABLE = "sortable";
+
+    private static final String EDITABLE = "editable";
+
+    private static final String FILTERABLE = "filterable";
+
     @Inject
     private JSONTableDataCache jsonTableDataCache;
 
@@ -69,6 +84,9 @@ public class JSONTableMacro extends AbstractMacro<JSONTableMacroParameters>
 
     private ObjectMapper objectMapper;
 
+    /**
+     * Create a new {@link JSONTableMacro}.
+     */
     public JSONTableMacro()
     {
         super("JSON Table", "Adds a JSON Table", JSONTableMacroParameters.class);
@@ -112,27 +130,27 @@ public class JSONTableMacro extends AbstractMacro<JSONTableMacroParameters>
     {
         List<Map<String, Object>> propertyTypes = new ArrayList<>();
         propertyTypes.add(new HashMap<String, Object>() {{
-            put("id", "String");
-            put("sortable", true);
-            put("filterable", true);
-            put("editable", true);
-            put("filter", "text");
-        }});
+                put(ID, STRING);
+                put(SORTABLE, true);
+                put(FILTERABLE, true);
+                put(EDITABLE, true);
+                put("filter", "text");
+            }});
 
         Map<String, Object> result = new HashMap<String, Object>() {{
-            put("query", new HashMap<String, Object>() {{
-                put("properties", parameters.getFieldPathsList());
-                put("source", new HashMap<String, Object>() {{
-                    put("id", JSONTableLiveDataSource.ROLE_HINT);
-                    putAll(parameters.getParameterMap());
-                    put("cacheKey", cacheKey);
-                }});
-            }});
-            put("meta", new HashMap<String, Object>() {{
-                put("propertyDescriptors", getPropertyDescriptors(parameters));
-                put("propertyTypes", propertyTypes);
-            }});
-        }};
+                put("query", new HashMap<String, Object>() {{
+                        put("properties", parameters.getFieldPathsList());
+                        put("source", new HashMap<String, Object>() {{
+                                put(ID, JSONTableLiveDataSource.ROLE_HINT);
+                                putAll(parameters.getParameterMap());
+                                put("cacheKey", cacheKey);
+                            }});
+                    }});
+                put("meta", new HashMap<String, Object>() {{
+                        put("propertyDescriptors", getPropertyDescriptors(parameters));
+                        put("propertyTypes", propertyTypes);
+                    }});
+            }};
 
         return new ObjectMapper().writeValueAsString(result);
     }
@@ -142,14 +160,13 @@ public class JSONTableMacro extends AbstractMacro<JSONTableMacroParameters>
         List<Map<String, Object>> propertyDescriptors = new ArrayList<>();
         for (String fieldPath : parameters.getFieldPathsList()) {
             propertyDescriptors.add(new HashMap<String, Object>() {{
-                put("id", fieldPath);
-                put("name", fieldPath);
-                put("type", "String");
-                //put("displayer", "string");
-                put("editable", false);
-                put("sortable", true);
-                put("filterable", true);
-            }});
+                    put(ID, fieldPath);
+                    put("name", fieldPath);
+                    put("type", STRING);
+                    put(EDITABLE, false);
+                    put(SORTABLE, true);
+                    put(FILTERABLE, true);
+                }});
         }
         return propertyDescriptors;
     }

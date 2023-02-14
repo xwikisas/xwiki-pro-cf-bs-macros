@@ -27,11 +27,25 @@ import org.xwiki.component.annotation.Component;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+/**
+ * Helper for the {@link JSONTableMacro}.
+ *
+ * @version $Id$
+ * @since 1.0
+ */
 @Component(roles = JSONTableDataManager.class)
 @Singleton
 public class JSONTableDataManager
 {
-    public Enumeration<JsonNode> applyPath(String path, JsonNode node) {
+    /**
+     * Apply a given JSONPath to the given node and retuns the matching nodes.
+     *
+     * @param path the JSON Path
+     * @param node the node to filter on
+     * @return the matching nodes
+     */
+    public Enumeration<JsonNode> applyPath(String path, JsonNode node)
+    {
         scala.collection.Iterator<JsonNode> res =
             io.gatling.jsonpath.JsonPath$.MODULE$.query(path, node).right().get();
         return scala.collection.JavaConverters$.MODULE$.asJavaEnumeration(res);
