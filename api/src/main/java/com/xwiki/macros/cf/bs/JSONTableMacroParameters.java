@@ -21,6 +21,7 @@ package com.xwiki.macros.cf.bs;
 
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,9 +64,9 @@ public class JSONTableMacroParameters
 
     private static final String PATH_SPLIT_CHAR = ",";
 
-    private List<String> paths;
+    private List<String> paths = Collections.EMPTY_LIST;
 
-    private List<String> fieldPaths;
+    private List<String> fieldPaths = Collections.EMPTY_LIST;
 
     private URL url;
 
@@ -101,6 +102,14 @@ public class JSONTableMacroParameters
     public String getPaths()
     {
         return String.join(PATH_SPLIT_CHAR, this.paths);
+    }
+
+    /**
+     * @return the paths
+     */
+    public List<String> getPathsList()
+    {
+        return this.paths;
     }
 
     /**

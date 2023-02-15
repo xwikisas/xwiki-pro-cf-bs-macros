@@ -56,7 +56,7 @@ import com.xwiki.macros.cf.bs.internal.JSONTableDataHelper;
 public class JSONTableLiveDataEntryStore extends WithParameters implements LiveDataEntryStore
 {
     @Inject
-    private JSONTableDataHelper manager;
+    private JSONTableDataHelper jsonTableDataHelper;
 
     @Override
     public Optional<Map<String, Object>> get(Object entryId) throws LiveDataException
@@ -74,7 +74,7 @@ public class JSONTableLiveDataEntryStore extends WithParameters implements LiveD
 
         // For now, we only consider the first path in the list of paths
         List<JsonNode> nodes = Collections.list(
-            manager.applyPath(paths.get(0), (JsonNode) this.getParameters().get("node")));
+            jsonTableDataHelper.applyPath(paths.get(0), (JsonNode) this.getParameters().get("node")));
         liveData.setCount(nodes.size());
 
         // TODO : calculate offset
@@ -87,7 +87,7 @@ public class JSONTableLiveDataEntryStore extends WithParameters implements LiveD
             // TODO: This operation can be very expensive (especially because it's done multiple times), we should
             //  probably look at a way to cache the result
             for (String fieldPath : fieldPaths) {
-                Enumeration<JsonNode> matchingNodes = manager.applyPath(fieldPath, rootNode);
+                Enumeration<JsonNode> matchingNodes = jsonTableDataHelper.applyPath(fieldPath, rootNode);
                 if (matchingNodes.hasMoreElements()) {
                     entry.put(fieldPath, mapper.convertValue(matchingNodes.nextElement(), String.class));
                 }
@@ -98,12 +98,10 @@ public class JSONTableLiveDataEntryStore extends WithParameters implements LiveD
             }
         }
 
-        // TODO : Sort
-        /*for (LiveDataQuery.SortEntry sortEntry : query.getSort()) {
+        /*
+        for (LiveDataQuery.SortEntry sortEntry : query.getSort()) {
             entries.sort();
-        }
-        entries.stream().sorted()
-        liveData.getEntries()*/
+        }*/
 
         liveData.getEntries().addAll(entries);
         return liveData;

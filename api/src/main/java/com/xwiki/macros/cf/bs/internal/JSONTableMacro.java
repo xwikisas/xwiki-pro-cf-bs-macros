@@ -24,7 +24,9 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -51,6 +53,7 @@ import org.xwiki.rendering.transformation.MacroTransformationContext;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ValueNode;
 import com.xwiki.macros.cf.bs.JSONTableMacroParameters;
 import com.xwiki.macros.cf.bs.internal.livedata.JSONTableLiveDataSource;
 
@@ -78,6 +81,9 @@ public class JSONTableMacro extends AbstractMacro<JSONTableMacroParameters>
     @Inject
     private JSONTableDataCache jsonTableDataCache;
 
+    @Inject
+    private JSONTableDataHelper jsonTableDataHelper;
+
     private ObjectMapper objectMapper;
 
     /**
@@ -102,7 +108,7 @@ public class JSONTableMacro extends AbstractMacro<JSONTableMacroParameters>
         try {
             Pair<String, JsonNode> jsonNodePair = getJsonNode(parameters, content);
             return Collections.singletonList(new MacroBlock("liveData", Collections.emptyMap(),
-                buildLiveDataParameters(parameters, jsonNodePair.getKey()), false));
+                buildLiveDataParameters(parameters, jsonNodePair), false));
         } catch (JsonProcessingException e) {
             throw new MacroExecutionException("Failed to build parameters for the LiveData macro", e);
         }
@@ -114,9 +120,10 @@ public class JSONTableMacro extends AbstractMacro<JSONTableMacroParameters>
         return true;
     }
 
-    private String buildLiveDataParameters(JSONTableMacroParameters parameters, String cacheKey)
+    private String buildLiveDataParameters(JSONTableMacroParameters parameters, Pair<String, JsonNode> jsonNodePair)
         throws JsonProcessingException
     {
+        List<String> fieldPaths = getFieldPaths(parameters, jsonNodePair.getValue());
         List<Map<String, Object>> propertyTypes = new ArrayList<>();
         propertyTypes.add(new HashMap<String, Object>() {{
                 put(ID, STRING);
@@ -128,15 +135,18 @@ public class JSONTableMacro extends AbstractMacro<JSONTableMacroParameters>
 
         Map<String, Object> result = new HashMap<String, Object>() {{
                 put("query", new HashMap<String, Object>() {{
-                        put("properties", parameters.getFieldPathsList());
+                        put("properties", fieldPaths);
                         put("source", new HashMap<String, Object>() {{
-                                put(ID, JSONTableLiveDataSource.ROLE_HINT);
                                 putAll(parameters.getParameterMap());
-                                put("cacheKey", cacheKey);
+                                put(ID, JSONTableLiveDataSource.ROLE_HINT);
+                                put("cacheKey", jsonNodePair.getKey());
+                                // We are actually overwriting the value passed initially as part of
+                                // JSONTableMacroParameters#getParametersMap() to include any detected field path
+                                put("fieldPaths", fieldPaths);
                             }});
                     }});
                 put("meta", new HashMap<String, Object>() {{
-                        put("propertyDescriptors", getPropertyDescriptors(parameters));
+                        put("propertyDescriptors", getPropertyDescriptors(parameters, fieldPaths));
                         put("propertyTypes", propertyTypes);
                     }});
             }};
@@ -144,10 +154,42 @@ public class JSONTableMacro extends AbstractMacro<JSONTableMacroParameters>
         return new ObjectMapper().writeValueAsString(result);
     }
 
-    private List<Map<String, Object>> getPropertyDescriptors(JSONTableMacroParameters parameters)
+    private List<String> getFieldPaths(JSONTableMacroParameters parameters, JsonNode nodes)
+    {
+        if (!parameters.getFieldPathsList().isEmpty()) {
+            return parameters.getFieldPathsList();
+        } else {
+            // When field paths are not defined as parameters, we need to "guess" them from the JSONNodes that we
+            // get, while considering that field paths can be ordered by the parameter fieldOrderRegexPatterns.
+            // For now, the strategy is to use the fields available in the first entry that we get when applying the
+            // JSON path given as a parameter of the macro. This is not ideal as the first entry returned may miss
+            // some parameters, that are simply not defined. However, this will allow us to avoid having to iterate
+            // through the whole macro.
+            Enumeration<JsonNode> results = jsonTableDataHelper.applyPath(parameters.getPathsList().get(0), nodes);
+            if (results.hasMoreElements()) {
+                List<String> fieldPaths = new ArrayList<>();
+
+                JsonNode node = results.nextElement();
+                for (Iterator<String> it = node.fieldNames(); it.hasNext();) {
+                    String field = it.next();
+                    if (node.get(field) instanceof ValueNode) {
+                        fieldPaths.add(field);
+                    }
+                }
+
+                return fieldPaths;
+            } else {
+                return Collections.emptyList();
+            }
+
+        }
+    }
+
+    private List<Map<String, Object>> getPropertyDescriptors(JSONTableMacroParameters parameters,
+        List<String> fieldPaths)
     {
         List<Map<String, Object>> propertyDescriptors = new ArrayList<>();
-        for (String fieldPath : parameters.getFieldPathsList()) {
+        for (String fieldPath : fieldPaths) {
             propertyDescriptors.add(new HashMap<String, Object>() {{
                     put(ID, fieldPath);
                     put("name", getPropertyName(fieldPath, parameters));
