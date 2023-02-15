@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.xwiki.properties.annotation.PropertyMandatory;
 import org.xwiki.properties.annotation.PropertyName;
 
 /**
@@ -48,6 +47,11 @@ public class JSONTableMacroParameters
     public static final String FIELD_PATHS = "fieldPaths";
 
     /**
+     * The field order regex patterns name.
+     */
+    public static final String FIELD_ORDER_REGEX_PATTERNS = "fieldOrderRegexPatterns";
+
+    /**
      * The URL parameter name.
      */
     public static final String URL = "url";
@@ -62,11 +66,13 @@ public class JSONTableMacroParameters
      */
     public static final String STRIP_QUALIFIERS = "stripQualifiers";
 
-    private static final String PATH_SPLIT_CHAR = ",";
+    private static final String SPLIT_CHAR = ",";
 
-    private List<String> paths = Collections.EMPTY_LIST;
+    private List<String> paths = Collections.singletonList("$[*]");
 
     private List<String> fieldPaths = Collections.EMPTY_LIST;
+
+    private List<String> fieldOrderRegexPatterns = Collections.EMPTY_LIST;
 
     private URL url;
 
@@ -89,19 +95,18 @@ public class JSONTableMacroParameters
     /**
      * @param paths the JSON paths
      */
-    @PropertyMandatory
     @PropertyName("Comma-separated list of JSONPaths to fields")
     public void setPaths(String paths)
     {
-        this.paths = Arrays.asList(paths.split(PATH_SPLIT_CHAR));
+        this.paths = Arrays.asList(paths.split(SPLIT_CHAR));
     }
 
     /**
-     * @return the paths separated by commas
+     * @return the paths separated by {@link JSONTableMacroParameters#SPLIT_CHAR}
      */
     public String getPaths()
     {
-        return String.join(PATH_SPLIT_CHAR, this.paths);
+        return String.join(SPLIT_CHAR, this.paths);
     }
 
     /**
@@ -118,15 +123,15 @@ public class JSONTableMacroParameters
     @PropertyName("Paths to fields to be included")
     public void setFieldPaths(String fieldPaths)
     {
-        this.fieldPaths = Arrays.asList(fieldPaths.split(PATH_SPLIT_CHAR));
+        this.fieldPaths = Arrays.asList(fieldPaths.split(SPLIT_CHAR));
     }
 
     /**
-     * @return the field paths separated by commas
+     * @return the field paths separated by {@link JSONTableMacroParameters#SPLIT_CHAR}
      */
     public String getFieldPaths()
     {
-        return String.join(PATH_SPLIT_CHAR, this.fieldPaths);
+        return String.join(SPLIT_CHAR, this.fieldPaths);
     }
 
     /**
@@ -135,6 +140,31 @@ public class JSONTableMacroParameters
     public List<String> getFieldPathsList()
     {
         return this.fieldPaths;
+    }
+
+    /**
+     * @param fieldOrderRegexPatterns the field order regex patterns
+     */
+    @PropertyName("Regex patterns for ordering fields")
+    public void setFieldOrderRegexPatterns(String fieldOrderRegexPatterns)
+    {
+        this.fieldOrderRegexPatterns = Arrays.asList(fieldOrderRegexPatterns.split(SPLIT_CHAR));
+    }
+
+    /**
+     * @return the field order regex patterns separated by {@link JSONTableMacroParameters#SPLIT_CHAR}
+     */
+    public String getFieldOrderRegexPatterns()
+    {
+        return String.join(SPLIT_CHAR, this.fieldOrderRegexPatterns);
+    }
+
+    /**
+     * @return the list of field order regex patterns
+     */
+    public List<String> getFieldOrderRegexPatternsList()
+    {
+        return this.fieldOrderRegexPatterns;
     }
 
     /**

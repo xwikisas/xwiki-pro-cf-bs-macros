@@ -67,14 +67,14 @@ public class JSONTableLiveDataEntryStore extends WithParameters implements LiveD
     @Override
     public LiveData get(LiveDataQuery query) throws LiveDataException
     {
-        List<String> paths = (List<String>) this.getParameters().get("paths");
+        String path = (String) this.getParameters().get("path");
         List<String> fieldPaths = (List<String>) this.getParameters().get("fieldPaths");
 
         LiveData liveData = new LiveData();
 
         // For now, we only consider the first path in the list of paths
         List<JsonNode> nodes = Collections.list(
-            jsonTableDataHelper.applyPath(paths.get(0), (JsonNode) this.getParameters().get("node")));
+            jsonTableDataHelper.applyPath(path, (JsonNode) this.getParameters().get("node")));
         liveData.setCount(nodes.size());
 
         // TODO : calculate offset

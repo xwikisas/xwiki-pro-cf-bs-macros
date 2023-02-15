@@ -106,6 +106,11 @@ public class JSONTableMacro extends AbstractMacro<JSONTableMacroParameters>
         throws MacroExecutionException
     {
         try {
+            // The action of building live data parameters actually requires a lot of heavy lifting to make sure that
+            // the livedata that will be generated doesn't end up being corrupted. We'll especially need to load and
+            // parse the JSON to display in order to  extract some information.
+            // TODO : The "paths" parameter is supposed to generate one live data table per path. Currently, we only
+            //  consider the first parameter and ignore the others.
             Pair<String, JsonNode> jsonNodePair = getJsonNode(parameters, content);
             return Collections.singletonList(new MacroBlock("liveData", Collections.emptyMap(),
                 buildLiveDataParameters(parameters, jsonNodePair), false));
@@ -143,6 +148,7 @@ public class JSONTableMacro extends AbstractMacro<JSONTableMacroParameters>
                                 // We are actually overwriting the value passed initially as part of
                                 // JSONTableMacroParameters#getParametersMap() to include any detected field path
                                 put("fieldPaths", fieldPaths);
+                                put("path", parameters.getPathsList().get(0));
                             }});
                     }});
                 put("meta", new HashMap<String, Object>() {{
@@ -157,7 +163,7 @@ public class JSONTableMacro extends AbstractMacro<JSONTableMacroParameters>
     private List<String> getFieldPaths(JSONTableMacroParameters parameters, JsonNode nodes)
     {
         if (!parameters.getFieldPathsList().isEmpty()) {
-            return parameters.getFieldPathsList();
+            return orderFieldPaths(parameters, parameters.getFieldPathsList());
         } else {
             // When field paths are not defined as parameters, we need to "guess" them from the JSONNodes that we
             // get, while considering that field paths can be ordered by the parameter fieldOrderRegexPatterns.
@@ -177,11 +183,39 @@ public class JSONTableMacro extends AbstractMacro<JSONTableMacroParameters>
                     }
                 }
 
-                return fieldPaths;
+                return orderFieldPaths(parameters, fieldPaths);
             } else {
                 return Collections.emptyList();
             }
 
+        }
+    }
+
+    private List<String> orderFieldPaths(JSONTableMacroParameters parameters, List<String> fieldPaths)
+    {
+        // In case the field order regex patterns are defined, then we'll need to apply them in order to sort
+        // the computed list of field paths.
+        if (!parameters.getFieldOrderRegexPatternsList().isEmpty()) {
+            List<String> orderedFieldPaths = new ArrayList<>();
+
+            for (String regexPattern : parameters.getFieldOrderRegexPatternsList()) {
+                for (String fieldPath : fieldPaths) {
+                    if (!orderedFieldPaths.contains(fieldPath) && fieldPath.matches(regexPattern)) {
+                        orderedFieldPaths.add(fieldPath);
+                    }
+                }
+            }
+
+            // Add the remaining field paths that were not detected to the ordered field paths
+            for (String fieldPath : fieldPaths) {
+                if (!orderedFieldPaths.contains(fieldPath)) {
+                    orderedFieldPaths.add(fieldPath);
+                }
+            }
+
+            return orderedFieldPaths;
+        } else {
+            return fieldPaths;
         }
     }
 
