@@ -25,7 +25,7 @@
   <parent>
     <groupId>com.xwiki.pro</groupId>
     <artifactId>xwiki-pro-cf-bs-macros-parent</artifactId>
-    <version>0.2</version>
+    <version>0.3-SNAPSHOT</version>
   </parent>
   <artifactId>xwiki-pro-cf-bs-macros-api</artifactId>
   <name>XWiki Pro - CF BS Macros - API</name>
