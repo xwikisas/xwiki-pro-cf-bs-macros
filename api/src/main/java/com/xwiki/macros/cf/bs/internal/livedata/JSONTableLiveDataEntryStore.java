@@ -98,11 +98,6 @@ public class JSONTableLiveDataEntryStore extends WithParameters implements LiveD
             }
         }
 
-        /*
-        for (LiveDataQuery.SortEntry sortEntry : query.getSort()) {
-            entries.sort();
-        }*/
-
         liveData.getEntries().addAll(entries);
         return liveData;
     }

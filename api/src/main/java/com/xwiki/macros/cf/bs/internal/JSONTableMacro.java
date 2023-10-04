@@ -54,6 +54,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ValueNode;
+import com.xwiki.macros.cf.bs.BSMacroException;
 import com.xwiki.macros.cf.bs.JSONTableMacroParameters;
 import com.xwiki.macros.cf.bs.internal.livedata.JSONTableLiveDataSource;
 
@@ -114,6 +115,9 @@ public class JSONTableMacro extends AbstractMacro<JSONTableMacroParameters>
             Pair<String, JsonNode> jsonNodePair = getJsonNode(parameters, content);
             return Collections.singletonList(new MacroBlock("liveData", Collections.emptyMap(),
                 buildLiveDataParameters(parameters, jsonNodePair), false));
+        } catch (BSMacroException e) {
+            return Collections.singletonList(new MacroBlock("box", Collections.emptyMap(),
+                String.format("Failed to create table\n\n%s", e.getMessage()), false));
         } catch (JsonProcessingException e) {
             throw new MacroExecutionException("Failed to build parameters for the LiveData macro", e);
         }
@@ -248,7 +252,7 @@ public class JSONTableMacro extends AbstractMacro<JSONTableMacroParameters>
     }
 
     private Pair<String, JsonNode> getJsonNode(JSONTableMacroParameters parameters, String content)
-        throws MacroExecutionException
+        throws MacroExecutionException, BSMacroException
     {
         JsonNode result;
         String key;
@@ -283,7 +287,7 @@ public class JSONTableMacro extends AbstractMacro<JSONTableMacroParameters>
         }
     }
 
-    private JsonNode getJsonNodeFromURL(URL url) throws MacroExecutionException
+    private JsonNode getJsonNodeFromURL(URL url) throws MacroExecutionException, BSMacroException
     {
         HttpClientBuilder builder = HttpClientBuilder.create();
         builder.useSystemProperties();
@@ -296,8 +300,9 @@ public class JSONTableMacro extends AbstractMacro<JSONTableMacroParameters>
                 response.close();
                 return node;
             } else {
-                throw new MacroExecutionException(
-                    String.format("Got invalid HTTP response when fetching source contents for JSON Table [%s]", url));
+                throw new BSMacroException(
+                    String.format("Got invalid HTTP response when fetching source contents for JSON Table [%s] ; "
+                            + "response code : [%s]", url, response.getStatusLine().getStatusCode()));
             }
         } catch (IOException | URISyntaxException e) {
             throw new MacroExecutionException(
