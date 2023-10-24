@@ -28,6 +28,8 @@ import org.xwiki.cache.CacheManager;
 import org.xwiki.cache.config.CacheConfiguration;
 import org.xwiki.cache.eviction.LRUEvictionConfiguration;
 import org.xwiki.component.annotation.Component;
+import org.xwiki.component.manager.ComponentLifecycleException;
+import org.xwiki.component.phase.Disposable;
 import org.xwiki.component.phase.Initializable;
 import org.xwiki.component.phase.InitializationException;
 
@@ -41,7 +43,7 @@ import com.fasterxml.jackson.databind.JsonNode;
  */
 @Component(roles = JSONTableDataCache.class)
 @Singleton
-public class JSONTableDataCache implements Initializable
+public class JSONTableDataCache implements Initializable, Disposable
 {
     private static final String NAME = "cache.jsontable";
 
@@ -53,17 +55,14 @@ public class JSONTableDataCache implements Initializable
     @Override
     public void initialize() throws InitializationException
     {
-        try {
-            CacheConfiguration cacheConfiguration = new CacheConfiguration();
-            cacheConfiguration.setConfigurationId(NAME);
-            LRUEvictionConfiguration lru = new LRUEvictionConfiguration();
-            lru.setMaxEntries(1000);
-            // Make sure that JSON entries get updated every 500 seconds by default
-            lru.setLifespan(500);
-            cacheConfiguration.put(LRUEvictionConfiguration.CONFIGURATIONID, lru);
-            this.cache = this.cacheManager.createNewCache(cacheConfiguration);
-        } catch (CacheException e) {
-            throw new InitializationException("Failed to initialize JSON Table cache", e);
+        this.cache = newCache();
+    }
+
+    @Override
+    public void dispose() throws ComponentLifecycleException
+    {
+        if (this.cache != null) {
+            this.cache.dispose();
         }
     }
 
@@ -91,5 +90,21 @@ public class JSONTableDataCache implements Initializable
     public void remove(String key)
     {
         this.cache.remove(key);
+    }
+
+    private Cache<JsonNode> newCache() throws InitializationException
+    {
+        try {
+            CacheConfiguration cacheConfiguration = new CacheConfiguration();
+            cacheConfiguration.setConfigurationId(NAME);
+            LRUEvictionConfiguration lru = new LRUEvictionConfiguration();
+            lru.setMaxEntries(1000);
+            // Make sure that JSON entries get updated every 500 seconds by default
+            lru.setLifespan(500);
+            cacheConfiguration.put(LRUEvictionConfiguration.CONFIGURATIONID, lru);
+            return this.cacheManager.createNewCache(cacheConfiguration);
+        } catch (CacheException e) {
+            throw new InitializationException("Failed to initialize JSON Table cache", e);
+        }
     }
 }
