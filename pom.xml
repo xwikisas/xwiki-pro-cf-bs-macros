@@ -29,7 +29,7 @@
   </parent>
   <groupId>com.xwiki.pro</groupId>
   <artifactId>xwiki-pro-cf-bs-macros-parent</artifactId>
-  <version>0.4-SNAPSHOT</version>
+  <version>0.4</version>
   <packaging>pom</packaging>
   <name>XWiki Pro - CF BS Macros - Parent POM</name>
   <properties>
@@ -43,7 +43,7 @@
     <connection>scm:git:git://github.com/xwikisas/xwiki-pro-cf-bs-macros.git</connection>
     <developerConnection>scm:git:git@github.com:xwikisas/xwiki-pro-cf-bs-macros.git</developerConnection>
     <url>https://github.com/xwikisas/xwiki-pro-cf-bs-macros/tree/master</url>
-    <tag>HEAD</tag>
+    <tag>xwiki-pro-cf-bs-macros-parent-0.4</tag>
   </scm>
   <!-- Even though this repository is already declared in the parent POM, we still explicitly redeclare it for
    convenience. This makes it simpler to build this project without having to declare this repository in one's own
