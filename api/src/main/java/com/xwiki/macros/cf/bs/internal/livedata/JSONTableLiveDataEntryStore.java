@@ -68,7 +68,11 @@ public class JSONTableLiveDataEntryStore extends WithParameters implements LiveD
     public LiveData get(LiveDataQuery query) throws LiveDataException
     {
         String path = (String) this.getParameters().get("path");
-        List<String> fieldPaths = (List<String>) this.getParameters().get("fieldPaths");
+        // Even if "fieldsPaths" is added as an ArrayList, when it only contains a single element, it is cast to a
+        // String object. Because of this, we need to check if the object is a List or a String before we can use it.
+        Object fieldPathsParam = this.getParameters().get("fieldPaths");
+        List<String> fieldPaths = fieldPathsParam instanceof List<?> ? (List<String>) fieldPathsParam
+            : Collections.singletonList((String) fieldPathsParam);
 
         LiveData liveData = new LiveData();
 
